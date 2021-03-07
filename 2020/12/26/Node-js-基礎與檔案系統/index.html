@@ -1,0 +1,298 @@
+<!DOCTYPE html><html lang="zh-TW" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>[Node.js] 基礎與檔案系統 | Joe's Blog</title><meta name="keywords" content="Node.js"><meta name="author" content="JoeB"><meta name="copyright" content="JoeB"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="[Node.js] 基礎與檔案系統全域物件window 是瀏覽器的 global object 全域物件但在 Node.js 中，全域物件不是 window，而是 global 可以試著在 js 檔中輸入 1console.log(global);  並透過終端執行該 js 檔，可以看到如下畫面 可以發現有些與瀏覽器的 window 有一樣的 methods 這裡再試著將 js 檔改成如下 123">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Node.js] 基礎與檔案系統">
+<meta property="og:url" content="http://example.com/2020/12/26/Node-js-%E5%9F%BA%E7%A4%8E%E8%88%87%E6%AA%94%E6%A1%88%E7%B3%BB%E7%B5%B1/index.html">
+<meta property="og:site_name" content="Joe&#39;s Blog">
+<meta property="og:description" content="[Node.js] 基礎與檔案系統全域物件window 是瀏覽器的 global object 全域物件但在 Node.js 中，全域物件不是 window，而是 global 可以試著在 js 檔中輸入 1console.log(global);  並透過終端執行該 js 檔，可以看到如下畫面 可以發現有些與瀏覽器的 window 有一樣的 methods 這裡再試著將 js 檔改成如下 123">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/4OIbWlf.png">
+<meta property="article:published_time" content="2020-12-26T02:05:19.000Z">
+<meta property="article:modified_time" content="2020-12-28T13:40:49.063Z">
+<meta property="article:author" content="JoeB">
+<meta property="article:tag" content="Node.js">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/4OIbWlf.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2020/12/26/Node-js-%E5%9F%BA%E7%A4%8E%E8%88%87%E6%AA%94%E6%A1%88%E7%B3%BB%E7%B5%B1/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '複製成功',
+    error: '複製錯誤',
+    noSupport: '瀏覽器不支援'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '剛剛',
+    min: '分鐘前',
+    hour: '小時前',
+    day: '天前',
+    month: '個月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-12-28 21:40:49'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">13</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">標籤</div><div class="length-num">6</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分類</div><div class="length-num">1</div></a></div></div></div><hr/></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://i.imgur.com/4OIbWlf.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Joe's Blog</a></span><span id="menus"><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">[Node.js] 基礎與檔案系統</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">發表於</span><time class="post-meta-date-created" datetime="2020-12-26T02:05:19.000Z" title="發表於 2020-12-26 10:05:19">2020-12-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新於</span><time class="post-meta-date-updated" datetime="2020-12-28T13:40:49.063Z" title="更新於 2020-12-28 21:40:49">2020-12-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%B6%B2%E9%A0%81-%E7%B6%B2%E8%B7%AF%E7%9B%B8%E9%97%9C/">網頁/網路相關</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">閱讀量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Node-js-基礎與檔案系統"><a href="#Node-js-基礎與檔案系統" class="headerlink" title="[Node.js] 基礎與檔案系統"></a>[Node.js] 基礎與檔案系統</h1><h2 id="全域物件"><a href="#全域物件" class="headerlink" title="全域物件"></a>全域物件</h2><p><code>window</code> 是瀏覽器的 global object 全域物件<br>但在 Node.js 中，全域物件不是 <code>window</code>，而是 <code>global</code></p>
+<p>可以試著在 js 檔中輸入</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="built_in">global</span>);</span><br></pre></td></tr></table></figure>
+
+<p>並透過終端執行該 js 檔，可以看到如下畫面<br><img src="https://i.imgur.com/oAekUNM.png"></p>
+<p>可以發現有些與瀏覽器的 <code>window</code> 有一樣的 methods<br><br /></p>
+<p>這裡再試著將 js 檔改成如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">global</span>.setTimeout(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;時間到!&quot;</span>);</span><br><span class="line">&#125;, <span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+
+<p>執行 3 秒後，顯示如下<br><img src="https://i.imgur.com/QhkPPDS.png"><br><br /></p>
+<p>也可以省略 <code>global</code>，效果仍舊一樣</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;時間到!&quot;</span>);</span><br><span class="line">&#125;, <span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>到這裡可以發現 <code>global</code> 與 <code>window</code> 很相似，但還是有不同的地方，例如無法使用 DOM 的 functions，因為 <code>document</code> 在 <code>window</code> 中存在，在 <code>global</code> 卻不存在，不過這不是什麼大問題，一個負責前端網頁，一個負責後端操作，各司其職。<br><br /></p>
+<p><strong>補充</strong><br>Node.js 有 <code>__dirname</code> 及 <code>__filename</code> 的關鍵字，用於表示當前檔案的目錄路徑及絕對路徑</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(__dirname); <span class="comment">// 目錄路徑</span></span><br><span class="line"><span class="built_in">console</span>.log(__filename); <span class="comment">// 檔案絕對路徑</span></span><br></pre></td></tr></table></figure>
+
+<p>執行結果<br><img src="https://i.imgur.com/G5IUvK0.png"><br><br /></p>
+<h2 id="模組"><a href="#模組" class="headerlink" title="模組"></a>模組</h2><p>在了解什麼是模組前，先直接看以下範例</p>
+<p>建立 people.js 檔案<br><img src="https://i.imgur.com/spaEq76.png"><br><br /></p>
+<p>people.js 設置一個陣列常數，並將其列印出</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = [<span class="string">&#x27;Joe&#x27;</span>, <span class="string">&#x27;Peter&#x27;</span>, <span class="string">&#x27;Mary&#x27;</span>];</span><br><span class="line"><span class="built_in">console</span>.log(name);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>test.js 則撰寫如下，<code>require()</code> 參數為想要導入的文件路徑</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> x = <span class="built_in">require</span>(<span class="string">&#x27;./people&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>分別執行兩個檔案，解果如下<br><img src="https://i.imgur.com/vmFcTvK.png"><br><br /></p>
+<p>註解掉 people.js 的 <code>console.log(name)</code>;</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = [<span class="string">&#x27;Joe&#x27;</span>, <span class="string">&#x27;Peter&#x27;</span>, <span class="string">&#x27;Mary&#x27;</span>];</span><br><span class="line"><span class="comment">// console.log(name);</span></span><br></pre></td></tr></table></figure>
+<br />
+
+<p>再次執行兩個檔案，結果什麼也沒發生<br><img src="https://i.imgur.com/Vzv5zUi.png"><br><br /></p>
+<p>修改 test.js 列印出 <code>x</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> x = <span class="built_in">require</span>(<span class="string">&#x27;./people&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(x);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>結果為空物件<br><img src="https://i.imgur.com/IQe9gxN.png"></p>
+<p>這樣的導入文件無法正確的訪問該文件的內容，我們必須手動的導出想要的數據或屬性。<br><br /></p>
+<p>將 people.js 改成如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = [<span class="string">&#x27;Joe&#x27;</span>, <span class="string">&#x27;Peter&#x27;</span>, <span class="string">&#x27;Mary&#x27;</span>];</span><br><span class="line"><span class="built_in">module</span>.exports = <span class="string">&#x27;test&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>test.js 維持不變印出 <code>x</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> x = <span class="built_in">require</span>(<span class="string">&#x27;./people&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(x);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>執行結果為印出 test，因為我們導出了 <code>&quot;test&quot;</code> 這個字串，並由 <code>x</code> 接收<br><img src="https://i.imgur.com/NSRdOnT.png"><br><br /></p>
+<p>現在將 people.js 導出項目改為 <code>name</code> 陣列</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = [<span class="string">&#x27;Joe&#x27;</span>, <span class="string">&#x27;Peter&#x27;</span>, <span class="string">&#x27;Mary&#x27;</span>];</span><br><span class="line"><span class="built_in">module</span>.exports = name;</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>test.js 的執行結果，<code>x</code> 接收 <code>name</code> 陣列的數據了<br><img src="https://i.imgur.com/EXhzitk.png"><br><br /></p>
+<p>但萬一 people.js 多了一個陣列也想導出怎麼辦?<br>我們可以導出一個物件，將想要導出的數據作為該物件的屬性一起導出即可</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = [<span class="string">&#x27;Joe&#x27;</span>, <span class="string">&#x27;Peter&#x27;</span>, <span class="string">&#x27;Mary&#x27;</span>];</span><br><span class="line"><span class="keyword">const</span> age = [<span class="number">15</span>, <span class="number">23</span>, <span class="number">35</span>];</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  name, <span class="comment">// or name:name</span></span><br><span class="line">  age <span class="comment">// or age:age</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>(name 及 age 縮寫寫法與註解的寫法是同樣效果的，不了解者可以搜尋關於「使用 ES6 的物件屬性值簡寫」)</p>
+<p>再次執行 test.js，<code>x</code> 變成包含以下數據的物件了<br><img src="https://i.imgur.com/5JLcQAe.png"><br><br /></p>
+<p>可以將 test.js 改成如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> x = <span class="built_in">require</span>(<span class="string">&#x27;./people&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;name:&#x27;</span>, x.name);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;age:&#x27;</span>, x.age);</span><br></pre></td></tr></table></figure>
+
+
+<p>執行結果，現在可以自由的訪問導入文件其中的數據了<br><img src="https://i.imgur.com/ZVKteWu.png"><br><br /></p>
+<p>導入文件時，可以搭配使用 ES6 解構賦值的技巧</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123; name, age &#125; = <span class="built_in">require</span>(<span class="string">&#x27;./people&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;name:&#x27;</span>, name);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;age:&#x27;</span> age);</span><br></pre></td></tr></table></figure>
+
+
+<p>達到一樣的效果<br><img src="https://i.imgur.com/1VtSR2v.png"><br><br /></p>
+<p>到這裡已經了解如何導出和導入自己製作的「modules 模組」。<br>上述的檔案中，people.js 即為 module 模組，使用 <code>exports</code> 導出、<code>require</code> 導入。<br>那麼什麼是模組呢? 簡單來說就像 JavaScript library，讓我們能夠在想要的應用程式中加入一些想要使用的功能。<br><br /></p>
+<h2 id="內建模組"><a href="#內建模組" class="headerlink" title="內建模組"></a>內建模組</h2><p>前面介紹了如何導出導入自己的模組，但 Node.js 其實本身就有內建的模組了，使用方式也與前面所說相同，只是不需要手動導出，只要導入就可以使用了。</p>
+<h2 id="檔案系統"><a href="#檔案系統" class="headerlink" title="檔案系統"></a>檔案系統</h2><p>使用 JavasScript 創建、讀取和刪除在電腦上文件，沒有 Node.js 是做不到的，這裡使用名為 fs (File System)的內建模組來達成這些功能。</p>
+<p>首先將資料夾結構調整如下，docs 資料夾包含一個 note.txt 並隨意輸入些內容，作為稍後要操作的檔案<br><img src="https://i.imgur.com/tx104p0.png"><br><br /></p>
+<p>note.txt 內容<br><img src="https://i.imgur.com/qzlbRL8.png"></p>
+<p>接著在 test.js 導入模組，由於 fs 是內建模組所以不需要手動導出</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="讀取文件"><a href="#讀取文件" class="headerlink" title="讀取文件"></a>讀取文件</h3><p>使用 <code>fs.readFile()</code>，第一個參數為要讀取的檔案路徑，第二個參數為 callback function，在 <code>fs.readFile()</code> 結束後執行，處理 error 及 data</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.readFile(<span class="string">&#x27;./docs/note.txt&#x27;</span>, <span class="function">(<span class="params">err, data</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(data);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>執行結果，data 是關於一些緩衝區的訊息<br><img src="https://i.imgur.com/Ebnqrcr.png"><br><br /></p>
+<p>可以改成 <code>data.toString()</code> 來顯示想看到的字串訊息</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.readFile(<span class="string">&#x27;./docs/note.txt&#x27;</span>, <span class="function">(<span class="params">err, data</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(data.toString());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>執行<br><img src="https://i.imgur.com/ml4jmqL.png"><br><br /></p>
+<p>可以將要讀取的檔名改為不存在的檔案，觀察 <code>err</code> 參數</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.readFile(<span class="string">&#x27;./docs/note123.txt&#x27;</span>, <span class="function">(<span class="params">err, data</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(data.toString());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>執行顯示找不到該檔案<br><img src="https://i.imgur.com/7WcHxBs.png"><br><br /></p>
+<p><strong>補充</strong><br>注意! <code>fs.readFile()</code> 是非同步函數，可以執行以下的 code 觀察</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.readFile(<span class="string">&#x27;./docs/note123.txt&#x27;</span>, <span class="function">(<span class="params">err, data</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(data.toString());</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;我是最後一行 code&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>執行<br><img src="https://i.imgur.com/EBZjW6X.png"><br><br /></p>
+<h3 id="寫入檔案"><a href="#寫入檔案" class="headerlink" title="寫入檔案"></a>寫入檔案</h3><p>使用 <code>fs.writeFile()</code>，參數有三個，第一個為要寫入的檔案路徑，第二個為要寫入的內容，第三個為 callback function，但只帶一個 err 參數</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.writeFile(<span class="string">&#x27;./docs/note.txt&#x27;</span>, <span class="string">&#x27;Hello World!&#x27;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;已寫入檔案!&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>執行<br><img src="https://i.imgur.com/lq4ZPSe.png"></p>
+<p>note.txt 原本的內容不見了，變成寫入的內容<br><img src="https://i.imgur.com/X1yzXDZ.png"></p>
+<p>這次將檔案路徑修改成不存在的檔案 note2.txt</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.writeFile(<span class="string">&#x27;./docs/note2.txt&#x27;</span>, <span class="string">&#x27;Hello World!&#x27;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;已寫入 note2 檔案!&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>執行<br><img src="https://i.imgur.com/cq3tAI0.png"></p>
+<p>多了 note2.txt 檔案<br><img src="https://i.imgur.com/I4rNofu.png"></p>
+<p>note2.txt 內容<br><img src="https://i.imgur.com/D7imEPN.png"></p>
+<p>可以發現當寫入檔案的路徑不存在時，會自動創建檔案並寫入內容，若是存在則覆寫原本存在的檔案<br><br /></p>
+<h3 id="創建資料夾"><a href="#創建資料夾" class="headerlink" title="創建資料夾"></a>創建資料夾</h3><p>與 cmd 的 <code>mkdir</code> 指令相像。<br>使用 <code>fs.mkdir()</code>，第一個參數為要創建的資料夾路徑，第二個參數為 callback function</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.mkdir(<span class="string">&#x27;./source&#x27;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;資料夾已創建!&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>執行<br><img src="https://i.imgur.com/5Qe57Md.png"></p>
+<p>新增了 source 資料夾<br><img src="https://i.imgur.com/bBL5Nve.png"></p>
+<p>再執行一次，顯示 <code>err</code> 訊息，表示該資料夾已存在了<br><img src="https://i.imgur.com/JECSFC4.png"></p>
+<p>我們可以結合 <code>fs.existsSync()</code> 的使用來確認檔案或資料夾是否存在，如果資料夾存在回傳 <code>true</code>，不存在則回傳 <code>false</code>。<br>而以下的 code 會在資料夾不存在時創建，存在時則將其刪除，刪除目錄(資料夾)使用 <code>fs.rmdir()</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!fs.existsSync(<span class="string">&#x27;./source&#x27;</span>)) &#123;</span><br><span class="line">  fs.mkdir(<span class="string">&#x27;./source&#x27;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(err);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;資料夾已創建!&#x27;</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  fs.rmdir(<span class="string">&#x27;./source&#x27;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(err);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;資料夾已刪除!&#x27;</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>執行<br><img src="https://i.imgur.com/06OLFAg.png"></p>
+<p>剛剛創建的 source 資料夾刪除了<br><img src="https://i.imgur.com/9GFoP9O.png"></p>
+<p>反之現在再執行一次<br><img src="https://i.imgur.com/Ujm6F5h.png"></p>
+<p>source 資料夾又創建了<br><img src="https://i.imgur.com/jh02jUE.png"><br><br /></p>
+<h3 id="刪除文件"><a href="#刪除文件" class="headerlink" title="刪除文件"></a>刪除文件</h3><p>使用 <code>fs.unlink()</code> 刪除指定的文件，第一個參數為要刪除的檔案路徑，第二個參數為 callback function<br>這裡一樣結合 <code>fs.existsSyns()</code> 確認檔案是否存在，若存在則執行刪除檔案的動作</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (fs.existsSync(<span class="string">&#x27;./docs/delete.txt&#x27;</span>)) &#123;</span><br><span class="line">  fs.unlink(<span class="string">&#x27;./docs/delete.txt&#x27;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(err);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;檔案已刪除!&#x27;</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在執行上面程式前，先在 docs 資料夾創建 delete.txt 檔案<br><img src="https://i.imgur.com/nuc3azG.png"></p>
+<p>執行<br><img src="https://i.imgur.com/dUxsmMQ.png"></p>
+<p>delete.txt 檔案刪除了<br><img src="https://i.imgur.com/z2gJqgS.png"><br><br /></p>
+<h3 id="Streams-流"><a href="#Streams-流" class="headerlink" title="Streams 流"></a>Streams 流</h3><p>當我們有一筆很大的 data 數據要使用時，必須先將其全部一次載下來才能使用，這個過程可能會花很長的時間，但使用 <strong>streams</strong> (流) 的概念，讓我們可以在 data 完全載下來前就可以開始使用部分的 data 了，立即使用而不是等待。</p>
+<p>首先準備一個要讀取的數據 data.txt<br><img src="https://i.imgur.com/aGRtdfa.png"></p>
+<p>data.txt 內容<br><img src="https://i.imgur.com/jSJ0xAm.png"><br><br /></p>
+<p>使用 <code>fs.createReadStream()</code> 建立一個 stream 物件，命名為 <code>readStream</code><br>並對 <code>readStream</code> 監聽 <code>&#39;data&#39;</code> 事件，表示每當獲取新的 data chunk (數據塊)就會觸發，執行 callback function</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readStream = fs.createreadStream(<span class="string">&#x27;./docs/data.txt&#x27;</span>);</span><br><span class="line"></span><br><span class="line">readStream.on(<span class="string">&#x27;data&#x27;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;----- NEW CHUNK -----&#x27;</span>); <span class="comment">// 將數據塊區分</span></span><br><span class="line">  <span class="built_in">console</span>.log(chunk.toString());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p>執行結果可以看到區分的數據塊<br><img src="https://i.imgur.com/7MBNsnA.png"><br><br /></p>
+<p>注意上面的 chunk 使用 <code>toString()</code> 才能正確顯示內容，也可以對 readSteam 物件設定 <code>&#123;encoding: &#39;utf8&#39;&#125;</code> 會自動編碼，效果一樣</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readStream = fs.createreadStream(<span class="string">&#x27;./docs/data.txt&#x27;</span>, &#123;<span class="attr">encoding</span>: <span class="string">&#x27;utf8&#x27;</span>&#125;);</span><br><span class="line"></span><br><span class="line">readStream.on(<span class="string">&#x27;data&#x27;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;----- NEW CHUNK -----&#x27;</span>); <span class="comment">// 將數據塊區分</span></span><br><span class="line">  <span class="built_in">console</span>.log(chunk);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<br />
+
+<p>可以使用 stream 讀取檔案，同樣的也可以用於寫入檔案<br>使用 <code>fs.createWriteStream()</code> 創建物件，結合前面讀取檔案，並將內容寫入另一個檔案中</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readStream = fs.createreadStream(<span class="string">&#x27;./docs/data.txt&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> writeStream = fs.createWriteStream(<span class="string">&#x27;./docs/data2.txt&#x27;</span>);</span><br><span class="line"></span><br><span class="line">readStream.on(<span class="string">&#x27;data&#x27;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// console.log(&#x27;----- NEW CHUNK -----&#x27;); // 將數據塊區分</span></span><br><span class="line">  <span class="comment">// console.log(chunk.toString());</span></span><br><span class="line">  writeStream.write(<span class="string">&#x27;\nNEW CHUNK\n&#x27;</span>);</span><br><span class="line">  writeStream.write(chunk);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>這裡寫入的檔案為 data2.txt，並沒有先建立，執行後會自動建立</p>
+<p>執行結果，data2.txt 內容<br><img src="https://i.imgur.com/JPjzTyh.png"><br><br /></p>
+<p>此外 stream 還有 pipe 管子的概念，有些像是接水的管道，這裡只做簡單的示範</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readStream = fs.createReadStream(<span class="string">&#x27;./docs/data.txt&#x27;</span>, &#123;<span class="attr">encoding</span>: <span class="string">&#x27;utf8&#x27;</span>&#125;);</span><br><span class="line"><span class="keyword">const</span> writeStream = fs.createWriteStream(<span class="string">&#x27;./docs/data2.txt&#x27;</span>);</span><br><span class="line"></span><br><span class="line">readStream.pipe(writeStream);</span><br></pre></td></tr></table></figure>
+
+<p>執行後可以發現 data2.txt 的內容與 data.txt 內容完全一樣，能用更少的程式碼達到一樣的效果，關於 pipe 概念更深入的內容不是筆者目前筆記學習的重點，所以就不多介紹了。<br><br></p>
+<hr>
+<p><strong>參考資料</strong><br><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=OIBIXYLJjsI">The Net Ninja | Node.js Crash Course Tutorial #2 - Node.js Basics</a></p>
+</article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Node-js/">Node.js</a></div><div class="post_share"><div class="social-share" data-image="https://i.imgur.com/4OIbWlf.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/12/26/CodePen-%E7%B7%9A%E4%B8%8A%E5%89%8D%E7%AB%AF%E7%A8%8B%E5%BC%8F%E7%B7%A8%E8%BC%AF%E5%99%A8/"><img class="prev-cover" src="https://i.imgur.com/mRrvnqU.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">CodePen 線上前端程式編輯器</div></div></a></div><div class="next-post pull-right"><a href="/2020/12/26/Node-js-%E4%BB%8B%E7%B4%B9%E8%88%87%E9%96%8B%E5%A7%8B/"><img class="next-cover" src="https://i.imgur.com/4OIbWlf.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">[Node.js] 介紹與開始</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相關推薦</span></div><div class="relatedPosts-list"><div><a href="/2020/12/26/Node-js-介紹與開始/" title="[Node.js] 介紹與開始"><img class="cover" src="https://i.imgur.com/4OIbWlf.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-26</div><div class="title">[Node.js] 介紹與開始</div></div></a></div><div><a href="/2020/12/28/Node-js-客戶端與伺服器端/" title="[Node.js] 客戶端與伺服器端"><img class="cover" src="https://i.imgur.com/4OIbWlf.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-28</div><div class="title">[Node.js] 客戶端與伺服器端</div></div></a></div><div><a href="/2020/12/30/Node-js-NPM-套件管理工具/" title="[Node.js] NPM 套件管理工具"><img class="cover" src="https://i.imgur.com/4OIbWlf.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-30</div><div class="title">[Node.js] NPM 套件管理工具</div></div></a></div><div><a href="/2021/01/17/Node-js-Express/" title="[Node.js] Express"><img class="cover" src="https://i.imgur.com/4OIbWlf.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-01-17</div><div class="title">[Node.js] Express</div></div></a></div><div><a href="/2020/12/30/Node-js-請求與響應/" title="[Node.js] 請求與響應"><img class="cover" src="https://i.imgur.com/4OIbWlf.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-30</div><div class="title">[Node.js] 請求與響應</div></div></a></div><div><a href="/2021/01/17/Node-js-View-Engines/" title="[Node.js] View Engines"><img class="cover" src="https://i.imgur.com/4OIbWlf.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-01-17</div><div class="title">[Node.js] View Engines</div></div></a></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">JoeB</div><div class="author-info__description">學習各種東西的記錄或是分享有趣的事物</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">13</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">標籤</div><div class="length-num">6</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分類</div><div class="length-num">1</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目錄</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Node-js-%E5%9F%BA%E7%A4%8E%E8%88%87%E6%AA%94%E6%A1%88%E7%B3%BB%E7%B5%B1"><span class="toc-text">[Node.js] 基礎與檔案系統</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E5%9F%9F%E7%89%A9%E4%BB%B6"><span class="toc-text">全域物件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E7%B5%84"><span class="toc-text">模組</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A7%E5%BB%BA%E6%A8%A1%E7%B5%84"><span class="toc-text">內建模組</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AA%94%E6%A1%88%E7%B3%BB%E7%B5%B1"><span class="toc-text">檔案系統</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%80%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-text">讀取文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%AB%E5%85%A5%E6%AA%94%E6%A1%88"><span class="toc-text">寫入檔案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%B5%E5%BB%BA%E8%B3%87%E6%96%99%E5%A4%BE"><span class="toc-text">創建資料夾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%AA%E9%99%A4%E6%96%87%E4%BB%B6"><span class="toc-text">刪除文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Streams-%E6%B5%81"><span class="toc-text">Streams 流</span></a></li></ol></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/01/18/JS-Closure-%E9%96%89%E5%8C%85/" title="[JS] Closure 閉包"><img src="https://i.imgur.com/fyD4pxY.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="[JS] Closure 閉包"/></a><div class="content"><a class="title" href="/2021/01/18/JS-Closure-%E9%96%89%E5%8C%85/" title="[JS] Closure 閉包">[JS] Closure 閉包</a><time datetime="2021-01-18T07:40:38.000Z" title="發表於 2021-01-18 15:40:38">2021-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/01/18/JS-Scope-Scope-chain/" title="[JS] Scope &amp; Scope chain"><img src="https://i.imgur.com/fyD4pxY.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="[JS] Scope &amp; Scope chain"/></a><div class="content"><a class="title" href="/2021/01/18/JS-Scope-Scope-chain/" title="[JS] Scope &amp; Scope chain">[JS] Scope &amp; Scope chain</a><time datetime="2021-01-18T06:32:19.000Z" title="發表於 2021-01-18 14:32:19">2021-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/01/17/Node-js-View-Engines/" title="[Node.js] View Engines"><img src="https://i.imgur.com/4OIbWlf.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="[Node.js] View Engines"/></a><div class="content"><a class="title" href="/2021/01/17/Node-js-View-Engines/" title="[Node.js] View Engines">[Node.js] View Engines</a><time datetime="2021-01-17T07:01:45.000Z" title="發表於 2021-01-17 15:01:45">2021-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/01/17/Node-js-Express/" title="[Node.js] Express"><img src="https://i.imgur.com/4OIbWlf.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="[Node.js] Express"/></a><div class="content"><a class="title" href="/2021/01/17/Node-js-Express/" title="[Node.js] Express">[Node.js] Express</a><time datetime="2021-01-17T06:07:50.000Z" title="發表於 2021-01-17 14:07:50">2021-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/12/30/Node-js-NPM-%E5%A5%97%E4%BB%B6%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7/" title="[Node.js] NPM 套件管理工具"><img src="https://i.imgur.com/4OIbWlf.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="[Node.js] NPM 套件管理工具"/></a><div class="content"><a class="title" href="/2020/12/30/Node-js-NPM-%E5%A5%97%E4%BB%B6%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7/" title="[Node.js] NPM 套件管理工具">[Node.js] NPM 套件管理工具</a><time datetime="2020-12-30T12:42:05.000Z" title="發表於 2020-12-30 20:42:05">2020-12-30</time></div></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(https://i.imgur.com/4OIbWlf.png)"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By JoeB</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主題 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="閱讀模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="淺色和深色模式轉換"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="設定"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目錄"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到頂部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script></div></body></html>
